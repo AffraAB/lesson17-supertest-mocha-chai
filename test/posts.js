@@ -29,8 +29,10 @@ describe('/posts route', () => {
 
         expect(res.body.data).to.include(data);
         expect(res.body.data).to.have.property('id');
+        expect(res.status).to.eql(200); // Get real status code from v2 api
         // Get back the id of the post we just created to use later
         postId = res.body.data.id;
+        
     });
 
     it('GET /posts/:id', async () => {
