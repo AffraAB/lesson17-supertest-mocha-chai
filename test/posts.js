@@ -2,22 +2,29 @@ import supertest from 'supertest';
 import { expect } from 'chai';
 import dotenv from 'dotenv';
 import { createRandomPost } from '../helpers/post_helper';
+import { createRandomUser } from "../helpers/user_helper";
 
 // Configuration
 dotenv.config();
 
 describe('/posts route', () => {
-    // Setup
+    /* Setup */
     const request = supertest('https://gorest.co.in/public-api/');
     const token = process.env.USER_TOKEN;
     let userId = null;
     let postId = null;
 
-    // Tests
+    /* Creating a fresh user so we have one to work with */
+    before(async () => {
+        const res = await request.post('users').set('Authorization', `Bearer ${token}`).send(createRandomUser());
+        userId = res.body.data.id;
+    });
+
+    /* Tests */
     it('GET /posts', async () => {
         const res = await request.get('posts')
         expect(res.body.data).to.not.be.empty;
-        userId = res.body.data[0].user_id;
+        //userId = res.body.data[0].user_id; // We can't be sure this user works to work with
     });
 
     it('POST /posts', async function() {
@@ -57,5 +64,12 @@ describe('/posts route', () => {
         const res = await request.delete(`posts/${postId}`)
             .set('Authorization', `Bearer ${token}`);
         expect(res.body.data).to.eq(null);
+    });
+    
+    /* Cleanup */
+    after(async () => {
+        const res = await request
+          .delete(`users/${userId}`)
+          .set('Authorization', `Bearer ${token}`);
     });
 });
